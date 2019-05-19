@@ -1,9 +1,12 @@
 #include <math.h> // pow
 #include <stdio.h> // printf
+#include <stdlib.h> // malloc
+#include <string.h> // strtok
 
 #include "tablahash.h"
 
-#define HASH_SIZE 10
+#define MAX_WORD_LEN 30
+#define HASH_SIZE 100000
 #define PRIME_NUMBER 31
 
 // https://cp-algorithms.com/string/string-hashing.html
@@ -15,30 +18,23 @@ unsigned stringHash(String s) {
     return h;
 }
 
-void main() {
+TablaHash* leerArchivo(String a) {
     TablaHash* t = TablaHashCrear(HASH_SIZE, stringHash);
 
-    TablaHashInsertar(t, "Es");
-    TablaHashInsertar(t, "muy");
-    TablaHashInsertar(t, "facil");
-    TablaHashInsertar(t, "atrapar");
-    TablaHashInsertar(t, "custodiando");
-    TablaHashInsertar(t, "continuamente");
-    TablaHashInsertar(t, "hispanoamericanas");
-    TablaHashInsertar(t, "internacionalizadas");
-    TablaHashInsertar(t, "anticonstitucionalmente");
+    FILE* f = fopen(a, "r");
+    for (unsigned i = 0; !feof(f); i++) {
+        char* palabra = malloc(sizeof(char) * MAX_WORD_LEN);
+        fgets(palabra, MAX_WORD_LEN, f);
+        strtok(palabra, "\n\r");
+        TablaHashInsertar(t, palabra);
+    }
+    fclose(f);
 
-    printf("Tabla antes de eliminar:\n");
-    TablaHashImprimir(t);
+    return t;
+}
 
-    TablaHashEliminar(t, "Es");
-    TablaHashEliminar(t, "facil");
-    TablaHashEliminar(t, "atrapar");
-    TablaHashEliminar(t, "custodianto");
-
-    printf("Tabla despues de eliminar:\n");
-    TablaHashImprimir(t);
-
+void main() {
+    TablaHash* t = leerArchivo("listado-general.txt");
     char palabra[30];
     printf("Ingrese la palabra a buscar: "); scanf("%s", palabra);
     printf("La palabra `%s` se encuentra en la posicion %d.\n", palabra, TablaHashBuscar(t, palabra));
