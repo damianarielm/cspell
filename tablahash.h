@@ -19,6 +19,8 @@ TablaHash* TablaHashCrear(unsigned c, FuncionHash f);
 
 void TablaHashImprimir(TablaHash* t);
 
+int TablaHashCasilleroVacio(TablaHash* t, unsigned i);
+
 void TablaHashInsertar(TablaHash* t, String s);
 
 int TablaHashBuscar(TablaHash* t, String s);
