@@ -28,17 +28,20 @@ TablaHash* crearDiccionario(String fileName) {
 }
 
 void sugerirPalabras(String palabra) {
+    // Validamos la entrada
+    assert(palabra);
+
     // COMPLETAR
     return;
 }
 
-void chequearPalabra(String palabra, int lineNumber, TablaHash* t) {
+void chequearPalabra(String s, int lineNumber, TablaHash* t) {
     // Validamos la entrada
-    assert(palabra && t);
+    assert(s && t);
 
-    if (TablaHashBuscar(t, palabra) == -1) {
-        printf("Linea %d, \"%s\" no esta en el diccionario.\n", lineNumber, palabra);
-        sugerirPalabras(palabra);
+    if (TablaHashBuscar(t, s) == -1) {
+        printf("Linea %d, \"%s\" no esta en el diccionario.\n", lineNumber, s);
+        sugerirPalabras(s);
     }
 }
 
@@ -46,23 +49,24 @@ void main(int argc, char** argv) {
     // Chequeamos la sintaxis
     if (argc != 3) {
         printf("Uso correcto: %s archivoEntrada archivoSalida.\n", argv[0]);
-    } else {
-        // Creamos el diccionario
-        TablaHash* t = crearDiccionario(DICTIONARY);
-
-        // Leemos la entrada al mismo tiempo que buscamos errores
-        FILE* file = fopen(argv[1], "r"); assert(file);
-        char palabra[MAX_WORD_LEN]; unsigned lineNumber = 1;
-        for (int i = 0; (palabra[i] = fgetc(file)) != EOF; i++) {
-            if (isDelimiter(palabra[i])) {
-                if (palabra[i] == '\n') lineNumber++;
-                palabra[i] = '\0'; toLower(palabra);
-                chequearPalabra(palabra, lineNumber, t);
-                i = -1;
-            }
-        }
-        fclose(file);
-
-        TablaHashDestruir(t);
+        return;
     }
+
+    // Creamos el diccionario
+    TablaHash* t = crearDiccionario(DICTIONARY);
+
+    // Leemos la entrada al mismo tiempo que buscamos errores
+    FILE* file = fopen(argv[1], "r"); assert(file);
+    char palabra[MAX_WORD_LEN]; unsigned lineNumber = 1;
+    for (int i = 0; (palabra[i] = fgetc(file)) != EOF; i++) {
+        if (isDelimiter(palabra[i])) {
+            if (palabra[i] == '\n') lineNumber++;
+            palabra[i] = '\0'; toLower(palabra);
+            chequearPalabra(palabra, lineNumber, t);
+            i = -1;
+        }
+    }
+    fclose(file);
+
+    TablaHashDestruir(t);
 }

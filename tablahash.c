@@ -11,8 +11,7 @@ unsigned long djb2(String string) {
     assert(string);
 
     unsigned long hash = 5381; int c;
-    while (c = *string++)
-        hash = ((hash << 5) + hash) + c; // hash * 33 + c
+    while (c = *string++) hash = ((hash << 5) + hash) + c;
 
     return hash;
 }
@@ -22,20 +21,20 @@ TablaHash* TablaHashCrear(unsigned c, FuncionHash f) {
     assert(c && f);
 
     // Creamos la estructura
-    TablaHash* tablahash = malloc(sizeof(TablaHash)); assert(tablahash);
-    tablahash->tabla = malloc(sizeof(String) * c); assert(tablahash->tabla);
-    tablahash->capacidad = c;
-    tablahash->nElementos = 0;
-    tablahash->hash = f;
-    tablahash->eliminadas = malloc(sizeof(unsigned) * c); assert(tablahash->eliminadas);
+    TablaHash* t = malloc(sizeof(TablaHash)); assert(t);
+    t->tabla = malloc(sizeof(String) * c); assert(t->tabla);
+    t->capacidad = c;
+    t->nElementos = 0;
+    t->hash = f;
+    t->eliminadas = malloc(sizeof(unsigned) * c); assert(t->eliminadas);
 
     // Inicializamos la tabla
     for (unsigned i = 0; i < c; i++) {
-        tablahash->tabla[i] = NULL;
-        tablahash->eliminadas[i] = 0;
+        t->tabla[i] = NULL;
+        t->eliminadas[i] = 0;
     }
 
-    return tablahash;
+    return t;
 }
 
 void TablaHashImprimir(TablaHash* t) {
@@ -60,8 +59,7 @@ void TablaHashInsertar(TablaHash* t, String s) {
     assert(t && s);
 
     // Comprobamos el factor de carga
-    if (t->nElementos / t->capacidad > MAX_LOAD)
-        TablaHashRedimensionar(t);
+    if (t->nElementos / t->capacidad > MAX_LOAD) TablaHashRedimensionar(t);
 
     // Calculamos la posicion ideal
     unsigned idx = t->hash(s) % t->capacidad;
@@ -99,23 +97,30 @@ void TablaHashEliminar(TablaHash* t, String s) {
     // Buscamos la palabra
     int i = TablaHashBuscar(t, s);
 
-    // Si no se encuentra, no se hace nada
-    if (i == -1) return;
-
-    // De lo contrario, eliminamos la palabra
-    t->tabla[i] = NULL;
-    t->eliminadas[i] = 1;
-    t->nElementos--;
+    // Si encontramos la palabra, la eliminamos
+    if (i != -1) {
+        t->tabla[i] = NULL;
+        t->eliminadas[i] = 1;
+        t->nElementos--;
+    }
 }
 
 void TablaHashRedimensionar(TablaHash* t) {
+    // Validamos la entrada
+    assert(t);
+
     // COMPLETAR
     return;
 }
 
 void TablaHashDestruir(TablaHash* t) {
+    // Validamos la entrada
+    assert(t);
+
+    // Borramos las cadenas
     for (unsigned i = 0; i < t->capacidad; i++) free(t->tabla[i]);
 
+    // Borramos el resto
     free(t->tabla);
     free(t->eliminadas);
     free(t);

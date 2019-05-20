@@ -8,12 +8,13 @@ void toLower(String s) {
 
 int isDelimiter(char c) {
     switch (c) {
-        case ' ' : return 1;
-        case '\n': return 1;
-        case '.' : return 1;
-        case ':' : return 1;
-        case ',' : return 1;
-        case '!' : return 1;
+        case ' ' :
+        case '\n':
+        case ':' :
+        case ';' :
+        case ',' :
+        case '.' :
+        case '!' :
         case '?' : return 1;
         default  : return 0;
     }
