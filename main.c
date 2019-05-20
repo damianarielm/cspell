@@ -1,43 +1,68 @@
-#include <math.h> // pow
-#include <stdio.h> // printf
-#include <stdlib.h> // malloc
+#include <stdio.h> // printf, fopen, fclose
+#include <assert.h> // assert
 #include <string.h> // strtok
+#include <stdlib.h> // malloc
 
 #include "tablahash.h"
+#include "cadena.h"
 
-#define MAX_WORD_LEN 30
-#define HASH_SIZE 100000
-#define PRIME_NUMBER 31
+#define DICTIONARY "listado-general.txt"
 
-// https://cp-algorithms.com/string/string-hashing.html
-unsigned stringHash(String s) {
-    unsigned h = 0;
-    for (unsigned i = 0; s[i] != '\0'; i++)
-        h += s[i] * pow(PRIME_NUMBER, i);
+TablaHash* crearDiccionario(String fileName) {
+    // Validamos la entrada
+    assert(fileName);
 
-    return h;
-}
+    // Creamos la tabla hash
+    TablaHash* tabla = TablaHashCrear(HASH_SIZE, djb2);
 
-TablaHash* leerArchivo(String a) {
-    TablaHash* t = TablaHashCrear(HASH_SIZE, stringHash);
-
-    FILE* f = fopen(a, "r");
-    for (unsigned i = 0; !feof(f); i++) {
-        char* palabra = malloc(sizeof(char) * MAX_WORD_LEN);
-        fgets(palabra, MAX_WORD_LEN, f);
-        strtok(palabra, "\n\r");
-        TablaHashInsertar(t, palabra);
+    // Recorremos el archivo y agregamos las palabras
+    FILE* file = fopen(fileName, "r"); assert(file);
+    for (unsigned i = 0; !feof(file); i++) {
+        String palabra = malloc(sizeof(char) * MAX_WORD_LEN); assert(palabra);
+        fgets(palabra, MAX_WORD_LEN, file); strtok(palabra, "\n\r");
+        TablaHashInsertar(tabla, palabra);
     }
-    fclose(f);
+    fclose(file);
 
-    return t;
+    return tabla;
 }
 
-void main() {
-    TablaHash* t = leerArchivo("listado-general.txt");
-    char palabra[30];
-    printf("Ingrese la palabra a buscar: "); scanf("%s", palabra);
-    printf("La palabra `%s` se encuentra en la posicion %d.\n", palabra, TablaHashBuscar(t, palabra));
+void sugerirPalabras(String palabra) {
+    // COMPLETAR
+    return;
+}
 
-    TablaHashDestruir(t);
+void chequearPalabra(String palabra, int lineNumber, TablaHash* t) {
+    // Validamos la entrada
+    assert(palabra && t);
+
+    if (TablaHashBuscar(t, palabra) == -1) {
+        printf("Linea %d, \"%s\" no esta en el diccionario.\n", lineNumber, palabra);
+        sugerirPalabras(palabra);
+    }
+}
+
+void main(int argc, char** argv) {
+    // Chequeamos la sintaxis
+    if (argc != 3) {
+        printf("Uso correcto: %s archivoEntrada archivoSalida.\n", argv[0]);
+    } else {
+        // Creamos el diccionario
+        TablaHash* t = crearDiccionario(DICTIONARY);
+
+        // Leemos la entrada al mismo tiempo que buscamos errores
+        FILE* file = fopen(argv[1], "r"); assert(file);
+        char palabra[MAX_WORD_LEN]; unsigned lineNumber = 1;
+        for (int i = 0; (palabra[i] = fgetc(file)) != EOF; i++) {
+            if (isDelimiter(palabra[i])) {
+                if (palabra[i] == '\n') lineNumber++;
+                palabra[i] = '\0'; toLower(palabra);
+                chequearPalabra(palabra, lineNumber, t);
+                i = -1;
+            }
+        }
+        fclose(file);
+
+        TablaHashDestruir(t);
+    }
 }

@@ -1,18 +1,23 @@
-#ifndef __TABLAHASH_H_
-#define __TABLAHASH_H_
+#ifndef __TABLAHASH_H__
+#define __TABLAHASH_H__
+
+#include "cadena.h"
 
 #define MAX_LOAD 0.7
+#define HASH_SIZE 115001
+#define PRIME_NUMBER 31
+#define MAX_WORD_LEN 30
 
-typedef char* String;
+typedef unsigned long (*FuncionHash) (String);
 
-typedef unsigned (*FuncionHash) (String);
+unsigned long djb2(String s);
 
 typedef struct {
     String *tabla;
     unsigned capacidad;
     unsigned nElementos;
     FuncionHash hash;
-    int* eliminadas;
+    unsigned* eliminadas;
 } TablaHash;
 
 TablaHash* TablaHashCrear(unsigned c, FuncionHash f);

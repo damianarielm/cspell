@@ -5,17 +5,29 @@
 
 #include "tablahash.h"
 
+// http://www.cse.yorku.ca/~oz/hash.html
+unsigned long djb2(String string) {
+    // Validamos la entrada
+    assert(string);
+
+    unsigned long hash = 5381; int c;
+    while (c = *string++)
+        hash = ((hash << 5) + hash) + c; // hash * 33 + c
+
+    return hash;
+}
+
 TablaHash* TablaHashCrear(unsigned c, FuncionHash f) {
     // Validamos la entrada
-    assert(c != 0 && f != NULL);
+    assert(c && f);
 
     // Creamos la estructura
-    TablaHash* tablahash = malloc(sizeof(TablaHash));
-    tablahash->tabla = malloc(sizeof(String) * c);
+    TablaHash* tablahash = malloc(sizeof(TablaHash)); assert(tablahash);
+    tablahash->tabla = malloc(sizeof(String) * c); assert(tablahash->tabla);
     tablahash->capacidad = c;
     tablahash->nElementos = 0;
     tablahash->hash = f;
-    tablahash->eliminadas = malloc(sizeof(int) * c);
+    tablahash->eliminadas = malloc(sizeof(unsigned) * c); assert(tablahash->eliminadas);
 
     // Inicializamos la tabla
     for (unsigned i = 0; i < c; i++) {
@@ -28,52 +40,52 @@ TablaHash* TablaHashCrear(unsigned c, FuncionHash f) {
 
 void TablaHashImprimir(TablaHash* t) {
     // Validamos la entrada
-    assert(t != NULL);
+    assert(t);
 
     // Imprimimos
     for (unsigned i = 0; i < t->capacidad; i++)
-        if (t->tabla[i] != NULL) printf("[%d] `%s`.\n", i, t->tabla[i]);
+        if (t->tabla[i]) printf("[%d] `%s`.\n", i, t->tabla[i]);
 }
 
 int TablaHashCasilleroVacio(TablaHash* t, unsigned i) {
     // Validamos la entrada
-    assert(t != NULL);
+    assert(t);
 
     // El casillero esta vacio si es NULL y no esta eliminado
-    return t->tabla[i] == NULL && !t->eliminadas[i];
+    return !t->tabla[i] && !t->eliminadas[i];
 }
 
 void TablaHashInsertar(TablaHash* t, String s) {
     // Validamos la entrada
-    assert(t != NULL && s != NULL);
+    assert(t && s);
 
     // Comprobamos el factor de carga
     if (t->nElementos / t->capacidad > MAX_LOAD)
         TablaHashRedimensionar(t);
 
     // Calculamos la posicion ideal
-    unsigned i = t->hash(s) % t->capacidad;
+    unsigned idx = t->hash(s) % t->capacidad;
 
     // Sondeo lineal
-    while (t->tabla[i] != NULL) i = (i + 1) % t->capacidad;
+    while (t->tabla[idx]) idx = ++idx % t->capacidad;
 
     // Almacenamos los datos
-    t->tabla[i] = s;
-    t->eliminadas[i] = 0;
+    t->tabla[idx] = s;
+    t->eliminadas[idx] = 0;
     t->nElementos++;
 }
 
 int TablaHashBuscar(TablaHash* t, String s) {
     // Validamos la entrada
-    assert(t != NULL && s != NULL);
+    assert(t && s);
 
     // Calculamos la posicion ideal
-    unsigned i = t->hash(s) % t->capacidad;
+    unsigned idx = t->hash(s) % t->capacidad;
 
     // Comparamos la palabra y hacemos el sondeo
-    while (!TablaHashCasilleroVacio(t, i)) {
-        if (t->tabla[i] != NULL && !strcmp(s, t->tabla[i])) return i;
-        i++;
+    while (!TablaHashCasilleroVacio(t, idx)) {
+        if (t->tabla[idx] && !strcmp(s, t->tabla[idx])) return idx;
+        idx = ++idx % t->capacidad;
     }
 
     // Si todo fallo, la palabra no esta
@@ -82,7 +94,7 @@ int TablaHashBuscar(TablaHash* t, String s) {
 
 void TablaHashEliminar(TablaHash* t, String s) {
     // Validamos la entrada
-    assert(t != NULL && s != NULL);
+    assert(t && s);
 
     // Buscamos la palabra
     int i = TablaHashBuscar(t, s);
@@ -97,10 +109,13 @@ void TablaHashEliminar(TablaHash* t, String s) {
 }
 
 void TablaHashRedimensionar(TablaHash* t) {
+    // COMPLETAR
     return;
 }
 
 void TablaHashDestruir(TablaHash* t) {
+    for (unsigned i = 0; i < t->capacidad; i++) free(t->tabla[i]);
+
     free(t->tabla);
     free(t->eliminadas);
     free(t);
