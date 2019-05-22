@@ -3,7 +3,7 @@
 #include "cadena.h"
 
 void toLower(String s) {
-    for (unsigned i =0; s[i] != '\0'; i++) s[i] = tolower(s[i]);
+    for (unsigned i = 0; s[i]; i++) s[i] = tolower(s[i]);
 }
 
 int isDelimiter(char c) {

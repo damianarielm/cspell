@@ -2,9 +2,12 @@
 #include <assert.h> // assert
 #include <string.h> // strtok
 #include <stdlib.h> // malloc
+#include <fcntl.h> // open
+#include <unistd.h> // close, dup
 
 #include "tablahash.h"
 #include "cadena.h"
+#include "sugerencias.h"
 
 #define DICTIONARY "listado-general.txt"
 
@@ -27,25 +30,12 @@ TablaHash* crearDiccionario(String fileName) {
     return tabla;
 }
 
-void sugerirPalabras(String palabra) {
-    // Validamos la entrada
-    assert(palabra);
-
-    // COMPLETAR
-    return;
-}
-
-void chequearPalabra(String s, int lineNumber, TablaHash* t) {
-    // Validamos la entrada
-    assert(s && t);
-
-    if (TablaHashBuscar(t, s) == -1) {
-        printf("Linea %d, \"%s\" no esta en el diccionario.\n", lineNumber, s);
-        sugerirPalabras(s);
-    }
-}
-
 void main(int argc, char** argv) {
+    // Redireccionamos la salida estandar
+    int fileDescriptor = open(argv[2], O_WRONLY|O_CREAT, 0666);
+    close(1);
+    dup(fileDescriptor);
+
     // Chequeamos la sintaxis
     if (argc != 3) {
         printf("Uso correcto: %s archivoEntrada archivoSalida.\n", argv[0]);

@@ -109,8 +109,32 @@ void TablaHashRedimensionar(TablaHash* t) {
     // Validamos la entrada
     assert(t);
 
-    // COMPLETAR
-    return;
+    // Creamos los nuevos arreglo e inicializamos
+    String* tnueva = malloc(sizeof(String) * t->capacidad * 2); assert(tnueva);
+    unsigned* enueva = malloc(sizeof(unsigned) * t->capacidad * 2); assert(enueva);
+    for (unsigned i = 0; i < t->capacidad * 2; i++) {
+        tnueva[i] = NULL;
+        enueva[i] = 0;
+    }
+
+    // Conservamos los datos viejos
+    String* tvieja = t->tabla;
+    unsigned* evieja = t->eliminadas;
+    unsigned cvieja = t->capacidad;
+
+    // Intercambiamos las tablas
+    t->tabla = tnueva;
+    t->capacidad = t->capacidad * 2;
+    t->nElementos = 0;
+    t->eliminadas = enueva;
+
+    // Volvemos a agregar los datos
+    for (unsigned i = 0; i < cvieja; i++)
+        if (tvieja[i]) TablaHashInsertar(t, tvieja[i]);
+
+    // Destruimos la tabla vieja
+    free(tvieja);
+    free(evieja);
 }
 
 void TablaHashDestruir(TablaHash* t) {

@@ -5,7 +5,6 @@
 
 #define MAX_LOAD 0.7
 #define HASH_SIZE 115001
-#define PRIME_NUMBER 31
 #define MAX_WORD_LEN 30
 
 typedef unsigned long (*FuncionHash) (String);
