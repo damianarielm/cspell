@@ -4,6 +4,7 @@
 #include <stdlib.h> // malloc
 #include <fcntl.h> // open
 #include <unistd.h> // close, dup
+#include <locale.h> // setlocale
 
 #include "tablahash.h"
 #include "cadena.h"
@@ -11,7 +12,7 @@
 
 #define DICTIONARY "listado-general.txt"
 
-TablaHash* crearDiccionario(String fileName) {
+TablaHash* crearDiccionario(char* fileName) {
     // Validamos la entrada
     assert(fileName);
 
@@ -20,13 +21,13 @@ TablaHash* crearDiccionario(String fileName) {
 
     // Recorremos el archivo y agregamos las palabras
     FILE* file = fopen(fileName, "r"); assert(file);
-    char leido[WORD_LEN];
-    for (int i = 0; (leido[i] = fgetc(file)) != EOF; i++)
-        if (leido[i] == '\n' || leido[i] == '\r') {
-            leido[i] = '\0';
+    wchar_t leido[WORD_LEN];
+    for (int i = 0; (leido[i] = fgetwc(file)) != WEOF; i++)
+        if (leido[i] == L'\n' || leido[i] == L'\r') {
+            leido[i] = L'\0';
             if (i) {
-                String palabra = malloc(sizeof(char) * ++i); assert(palabra);
-                TablaHashInsertar(tabla, strcpy(palabra, leido));
+                String palabra = malloc(sizeof(wchar_t) * ++i); assert(palabra);
+                TablaHashInsertar(tabla, wcscpy(palabra, leido));
             }
             i = -1;
         }
@@ -48,16 +49,18 @@ void main(int argc, char** argv) {
         open(argv[2], O_WRONLY|O_CREAT, 0666);
     }
 
+    setlocale(LC_ALL, "");
+
     // Creamos el diccionario
     TablaHash* t = crearDiccionario(DICTIONARY);
 
     // Leemos la entrada al mismo tiempo que buscamos errores
     FILE* file = fopen(argv[1], "r"); assert(file);
-    char palabra[WORD_LEN]; unsigned lineNumber = 1;
-    for (int i = 0; (palabra[i] = fgetc(file)) != EOF; i++)
+    wchar_t palabra[WORD_LEN]; unsigned lineNumber = 1;
+    for (int i = 0; (palabra[i] = fgetwc(file)) != WEOF; i++)
         if (isDelimiter(palabra[i])) {
-            if (palabra[i] == '\n') lineNumber++;
-            palabra[i] = '\0'; toLower(palabra);
+            if (palabra[i] == L'\n') lineNumber++;
+            palabra[i] = L'\0'; toLower(palabra);
             if (i) chequearPalabra(palabra, lineNumber, t);
             i = -1;
         }

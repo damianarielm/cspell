@@ -1,6 +1,6 @@
 #include <assert.h> // assert
 #include <stdio.h> // printf
-#include <string.h> // strlen, strcpy, memmove
+#include <wchar.h> // wcslen, wcscpy, wmemmove, wcstok
 #include <malloc.h> // malloc, NULL
 
 #include "sugerencias.h"
@@ -9,12 +9,12 @@ void intercambiarAdyacentes(String palabra, TablaHash* t) {
     // Validamos la entrada
     assert(palabra && t);
 
-    for (int i = 0; i < (int) strlen(palabra); i++) {
-        char sugerencia[strlen(palabra)];
-        strcpy(sugerencia, palabra);
+    for (int i = 0; i < wcslen(palabra) - 1; i++) {
+        wchar_t sugerencia[wcslen(palabra) + 1];
+        wcscpy(sugerencia, palabra);
 
         // Intercambio de caracteres
-        char c = sugerencia[i];
+        wchar_t c = sugerencia[i];
         sugerencia[i] = sugerencia[i+1];
         sugerencia[i+1] = c;
 
@@ -26,11 +26,11 @@ void eliminarCaracteres(String palabra, TablaHash* t) {
     // Validamos la entrada
     assert(palabra && t);
 
-    for (unsigned i = 0; i < strlen(palabra); i++) {
-        char sugerencia[strlen(palabra)];
-        strcpy(sugerencia, palabra);
+    for (unsigned i = 0; i < wcslen(palabra); i++) {
+        wchar_t sugerencia[wcslen(palabra) + 1];
+        wcscpy(sugerencia, palabra);
 
-        memmove(&sugerencia[i], &sugerencia[i+1], strlen(sugerencia) - i);
+        wmemmove(&sugerencia[i], &sugerencia[i+1], wcslen(sugerencia) - i);
 
         sugerirPalabra(sugerencia, t);
     }
@@ -40,14 +40,14 @@ void agregarCaracteres(String palabra, TablaHash* t) {
     // Validamos la entrada
     assert(palabra && t);
 
-    for (unsigned i = 0; i < strlen(palabra); i++) {
-        for (unsigned char j = 'a'; j != 'z' + 1; j++) {
-            char sugerencia[strlen(palabra) + 1];
-            strcpy(sugerencia, palabra);
+    for (unsigned i = 0; i < wcslen(palabra); i++) {
+        for (unsigned j = 0; ALFABETO[j]; j++) {
+            wchar_t sugerencia[wcslen(palabra) + 1];
+            wcscpy(sugerencia, palabra);
 
             // Separamos la cadena y agregamos el caracter
-            memmove(&sugerencia[i+1], &sugerencia[i], strlen(sugerencia) - i);
-            sugerencia[i] = j;
+            wmemmove(&sugerencia[i+1], &sugerencia[i], wcslen(sugerencia) - i);
+            sugerencia[i] = ALFABETO[j];
 
             sugerirPalabra(sugerencia, t);
         }
@@ -58,20 +58,21 @@ void agregarEspacios(String palabra, TablaHash* t) {
     // Validamos la entrada
     assert(palabra && t);
 
-    for (unsigned i = 1; i < strlen(palabra); i++) {
-        char sugerencia[strlen(palabra) + 1];
-        strcpy(sugerencia, palabra);
+    for (unsigned i = 1; i < wcslen(palabra); i++) {
+        wchar_t sugerencia[wcslen(palabra) + 2];
+        wcscpy(sugerencia, palabra);
 
         // Separamos las palabras
-        memmove(&sugerencia[i+1], &sugerencia[i], strlen(sugerencia) - i + 1);
+        wmemmove(&sugerencia[i+1], &sugerencia[i], wcslen(sugerencia) - i + 1);
         sugerencia[i] = ' ';
 
         // Tokenizamos y buscamos en el diccionario
-        String token = malloc(sizeof(char) * strlen(palabra));
-        strcpy(token, sugerencia); String temp = token;
-        if (TablaHashBuscar(t, strtok(token, " ")) != -1)
-            if (TablaHashBuscar(t, strtok(NULL, " ")) != -1)
-                printf("%s, ", sugerencia);
+        String token = malloc(sizeof(char) * wcslen(palabra)); assert(token);
+        String buffer;
+        wcscpy(token, sugerencia); String temp = token;
+        if (TablaHashBuscar(t, wcstok(token, L" ", &buffer)) != -1)
+            if (TablaHashBuscar(t, wcstok(NULL, L" ", &buffer)) != -1)
+                wprintf(L"%ls, ", sugerencia);
         free(temp);
     }
 }
@@ -80,12 +81,12 @@ void reemplazarCaracteres(String palabra, TablaHash* t) {
     // Validamos la entrada
     assert(palabra && t);
 
-    for (unsigned i = 0; i < strlen(palabra); i++)
-        for (unsigned j = 'a'; j != 'z' + 1; j++) {
-            char sugerencia[strlen(palabra)];
-            strcpy(sugerencia, palabra);
+    for (unsigned i = 0; i < wcslen(palabra); i++)
+        for (unsigned j = 0; ALFABETO[j]; j++) {
+            wchar_t sugerencia[wcslen(palabra) + 1];
+            wcscpy(sugerencia, palabra);
 
-            sugerencia[i] = j;
+            sugerencia[i] = ALFABETO[j];
 
             sugerirPalabra(sugerencia, t);
         }
@@ -95,7 +96,7 @@ void sugerirPalabra(String palabra, TablaHash* t) {
     // Validamos la entrada
     assert(palabra && t);
 
-    if (TablaHashBuscar(t, palabra) != -1) printf("%s, ", palabra);
+    if (TablaHashBuscar(t, palabra) != -1) wprintf(L"%ls, ", palabra);
 }
 
 void chequearPalabra(String s, unsigned lineNumber, TablaHash* t) {
@@ -103,13 +104,13 @@ void chequearPalabra(String s, unsigned lineNumber, TablaHash* t) {
     assert(s && t);
 
     if (TablaHashBuscar(t, s) == -1) {
-        printf("Linea %d, \"%s\" no esta en el diccionario.\n", lineNumber, s);
-        printf("Quizas quizo decir: ");
+        wprintf(L"Linea %d, %ls no esta en el diccionario.\n", lineNumber, s);
+        wprintf(L"Quizas quizo decir: ");
         intercambiarAdyacentes(s, t);
         eliminarCaracteres(s, t);
         agregarCaracteres(s, t);
         reemplazarCaracteres(s, t);
         agregarEspacios(s, t);
-        printf("\n");
+        wprintf(L"\n");
     }
 }

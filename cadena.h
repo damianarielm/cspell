@@ -1,14 +1,16 @@
 #ifndef __CADENA_H__
 #define __CADENA_H__
 
-#define WORD_LEN 30
-#define DELIMITADORES " \n:;,.!?"
-#define ESPECIALES L"áéíóúüñ"
+#include <wchar.h>
 
-typedef unsigned char* String;
+#define WORD_LEN 30
+#define DELIMITADORES L" \n:;,.!?"
+#define ALFABETO L"abcdefghijklmnopqrstuvwxyzáéíóúüñ"
+
+typedef wchar_t* String;
 
 void toLower(String s);
 
-int isDelimiter(char c);
+int isDelimiter(wchar_t c);
 
 #endif

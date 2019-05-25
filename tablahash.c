@@ -1,6 +1,6 @@
 #include <stdio.h> // printf
 #include <stdlib.h> // malloc, NULL
-#include <string.h> // strcmp
+#include <wchar.h> // wcslen, wcscmp
 #include <assert.h> // assert
 
 #include "tablahash.h"
@@ -49,7 +49,7 @@ void TablaHashImprimir(TablaHash* t) {
 
     // Imprimimos los datos
     for (unsigned i = 0; i < t->capacidad; i++)
-        if (t->tabla[i]) printf("[%u] `%s`.\n", i, t->tabla[i]);
+        if (t->tabla[i]) printf("[%u] %ls.\n", i, t->tabla[i]);
 
     // Imprimimos estadisticas
     printf("Elementos: %d.\n", t->nElementos);
@@ -62,7 +62,7 @@ void TablaHashImprimir(TablaHash* t) {
     // Imprimimos el tamaño de la tabla
     unsigned tamano = sizeof(String) * t->capacidad;
     for (unsigned i = 0; i < t->capacidad; i++)
-        if (t->tabla[i]) tamano += (strlen(t->tabla[i])+1) * sizeof(char);
+        if (t->tabla[i]) tamano += (wcslen(t->tabla[i]) + 1) * sizeof(wchar_t);
     printf("Tamaño en memoria: %f mb.\n", (float) tamano / 1024 / 1024);
 }
 
@@ -100,7 +100,7 @@ int TablaHashBuscar(TablaHash* t, String s) {
 
     // Comparamos la palabra y hacemos el sondeo
     while (t->tabla[idx]) {
-        if (!strcmp(s, t->tabla[idx])) return idx;
+        if (!wcscmp(s, t->tabla[idx])) return idx;
         idx = (idx + t->hash2(s)) % t->capacidad;
     }
 
