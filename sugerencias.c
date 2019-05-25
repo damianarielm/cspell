@@ -9,16 +9,16 @@ void intercambiarAdyacentes(String palabra, TablaHash* t) {
     // Validamos la entrada
     assert(palabra && t);
 
-    for (unsigned i = 0; i < strlen(palabra) - 1; i++) {
-        char temp[strlen(palabra)];
-        strcpy(temp, palabra);
+    for (int i = 0; i < (int) strlen(palabra); i++) {
+        char sugerencia[strlen(palabra)];
+        strcpy(sugerencia, palabra);
 
         // Intercambio de caracteres
-        char c = temp[i];
-        temp[i] = temp[i+1];
-        temp[i+1] = c;
+        char c = sugerencia[i];
+        sugerencia[i] = sugerencia[i+1];
+        sugerencia[i+1] = c;
 
-        sugerirPalabra(temp, t);
+        sugerirPalabra(sugerencia, t);
     }
 }
 
@@ -27,12 +27,12 @@ void eliminarCaracteres(String palabra, TablaHash* t) {
     assert(palabra && t);
 
     for (unsigned i = 0; i < strlen(palabra); i++) {
-        char temp[strlen(palabra)];
-        strcpy(temp, palabra);
+        char sugerencia[strlen(palabra)];
+        strcpy(sugerencia, palabra);
 
-        memmove(&temp[i], &temp[i+1], strlen(temp) - i);
+        memmove(&sugerencia[i], &sugerencia[i+1], strlen(sugerencia) - i);
 
-        sugerirPalabra(temp, t);
+        sugerirPalabra(sugerencia, t);
     }
 }
 
@@ -41,14 +41,15 @@ void agregarCaracteres(String palabra, TablaHash* t) {
     assert(palabra && t);
 
     for (unsigned i = 0; i < strlen(palabra); i++) {
-        for (unsigned j = 'a'; j != 'z' + 1; j++) {
-            char temp[strlen(palabra) + 1];
-            strcpy(temp, palabra);
+        for (unsigned char j = 'a'; j != 'z' + 1; j++) {
+            char sugerencia[strlen(palabra) + 1];
+            strcpy(sugerencia, palabra);
 
-            memmove(&temp[i+1], &temp[i], strlen(temp) - i);
-            temp[i] = j;
+            // Separamos la cadena y agregamos el caracter
+            memmove(&sugerencia[i+1], &sugerencia[i], strlen(sugerencia) - i);
+            sugerencia[i] = j;
 
-            sugerirPalabra(temp, t);
+            sugerirPalabra(sugerencia, t);
         }
     }
 }
@@ -58,23 +59,20 @@ void agregarEspacios(String palabra, TablaHash* t) {
     assert(palabra && t);
 
     for (unsigned i = 1; i < strlen(palabra); i++) {
-        char* temp = malloc(sizeof(char) * strlen(palabra));
-        strcpy(temp, palabra);
+        char sugerencia[strlen(palabra) + 1];
+        strcpy(sugerencia, palabra);
 
-        memmove(&temp[i+1], &temp[i], strlen(temp) - i);
-        temp[i] = ' ';
-        char temp2[strlen(temp)];
-        strcpy(temp2, temp);
-        char* temp3 = temp;
+        // Separamos las palabras
+        memmove(&sugerencia[i+1], &sugerencia[i], strlen(sugerencia) - i + 1);
+        sugerencia[i] = ' ';
 
-        temp = strtok(temp, " ");
-        if (TablaHashBuscar(t, temp) != -1) {
-            temp = strtok(NULL, " ");
-            if (TablaHashBuscar(t, temp) != -1)
-                printf("%s, ", temp2);
-        }
-
-        free(temp3);
+        // Tokenizamos y buscamos en el diccionario
+        String token = malloc(sizeof(char) * strlen(palabra));
+        strcpy(token, sugerencia); String temp = token;
+        if (TablaHashBuscar(t, strtok(token, " ")) != -1)
+            if (TablaHashBuscar(t, strtok(NULL, " ")) != -1)
+                printf("%s, ", sugerencia);
+        free(temp);
     }
 }
 
@@ -82,16 +80,15 @@ void reemplazarCaracteres(String palabra, TablaHash* t) {
     // Validamos la entrada
     assert(palabra && t);
 
-    for (unsigned i = 0; i < strlen(palabra); i++) {
+    for (unsigned i = 0; i < strlen(palabra); i++)
         for (unsigned j = 'a'; j != 'z' + 1; j++) {
-            char temp[strlen(palabra)];
-            strcpy(temp, palabra);
+            char sugerencia[strlen(palabra)];
+            strcpy(sugerencia, palabra);
 
-            temp[i] = j;
+            sugerencia[i] = j;
 
-            sugerirPalabra(temp, t);
+            sugerirPalabra(sugerencia, t);
         }
-    }
 }
 
 void sugerirPalabra(String palabra, TablaHash* t) {

@@ -1,6 +1,6 @@
 #include <stdio.h> // printf, fopen, fclose
 #include <assert.h> // assert
-#include <string.h> // strtok
+#include <string.h> // strcpy
 #include <stdlib.h> // malloc
 #include <fcntl.h> // open
 #include <unistd.h> // close, dup
@@ -16,30 +16,36 @@ TablaHash* crearDiccionario(String fileName) {
     assert(fileName);
 
     // Creamos la tabla hash
-    TablaHash* tabla = TablaHashCrear(HASH_SIZE, djb2);
+    TablaHash* tabla = TablaHashCrear(HASH_SIZE, djb2, sdbm);
 
     // Recorremos el archivo y agregamos las palabras
     FILE* file = fopen(fileName, "r"); assert(file);
-    for (unsigned i = 0; !feof(file); i++) {
-        String palabra = malloc(sizeof(char) * MAX_WORD_LEN); assert(palabra);
-        fgets(palabra, MAX_WORD_LEN, file); strtok(palabra, "\n\r");
-        TablaHashInsertar(tabla, palabra);
-    }
+    char leido[WORD_LEN];
+    for (int i = 0; (leido[i] = fgetc(file)) != EOF; i++)
+        if (leido[i] == '\n' || leido[i] == '\r') {
+            leido[i] = '\0';
+            if (i) {
+                String palabra = malloc(sizeof(char) * ++i); assert(palabra);
+                TablaHashInsertar(tabla, strcpy(palabra, leido));
+            }
+            i = -1;
+        }
     fclose(file);
 
     return tabla;
 }
 
 void main(int argc, char** argv) {
-    // Redireccionamos la salida estandar
-    int fileDescriptor = open(argv[2], O_WRONLY|O_CREAT, 0666);
-    close(1);
-    dup(fileDescriptor);
-
     // Chequeamos la sintaxis
     if (argc != 3) {
         printf("Uso correcto: %s archivoEntrada archivoSalida.\n", argv[0]);
         return;
+    }
+
+    // Redireccionamos la salida estandar
+    if (strcmp(argv[2], "stdout")) {
+        close(1);
+        open(argv[2], O_WRONLY|O_CREAT, 0666);
     }
 
     // Creamos el diccionario
@@ -47,15 +53,14 @@ void main(int argc, char** argv) {
 
     // Leemos la entrada al mismo tiempo que buscamos errores
     FILE* file = fopen(argv[1], "r"); assert(file);
-    char palabra[MAX_WORD_LEN]; unsigned lineNumber = 1;
-    for (int i = 0; (palabra[i] = fgetc(file)) != EOF; i++) {
+    char palabra[WORD_LEN]; unsigned lineNumber = 1;
+    for (int i = 0; (palabra[i] = fgetc(file)) != EOF; i++)
         if (isDelimiter(palabra[i])) {
             if (palabra[i] == '\n') lineNumber++;
             palabra[i] = '\0'; toLower(palabra);
-            chequearPalabra(palabra, lineNumber, t);
+            if (i) chequearPalabra(palabra, lineNumber, t);
             i = -1;
         }
-    }
     fclose(file);
 
     TablaHashDestruir(t);

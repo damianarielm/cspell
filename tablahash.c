@@ -16,23 +16,29 @@ unsigned long djb2(String string) {
     return hash;
 }
 
-TablaHash* TablaHashCrear(unsigned c, FuncionHash f) {
+unsigned long sdbm(String string)
+{
     // Validamos la entrada
-    assert(c && f);
+    assert(string);
+
+    unsigned long hash = 0; int c;
+    while (c = *string++) hash = c + (hash << 6) + (hash << 16) - hash;
+
+    return ++hash;
+}
+
+TablaHash* TablaHashCrear(unsigned c, FuncionHash f1, FuncionHash f2) {
+    // Validamos la entrada
+    assert(c && f1 && f2);
 
     // Creamos la estructura
     TablaHash* t = malloc(sizeof(TablaHash)); assert(t);
     t->tabla = malloc(sizeof(String) * c); assert(t->tabla);
-    t->capacidad = c;
-    t->nElementos = 0;
-    t->hash = f;
-    t->eliminadas = malloc(sizeof(unsigned) * c); assert(t->eliminadas);
+    t->capacidad = c; t->hash1 = f1; t->hash2 = f2;
+    t->nElementos = t->colisiones = t->peorcaso = t->rehasheos = 0;
 
     // Inicializamos la tabla
-    for (unsigned i = 0; i < c; i++) {
-        t->tabla[i] = NULL;
-        t->eliminadas[i] = 0;
-    }
+    for (unsigned i = 0; i < c; i++) t->tabla[i] = NULL;
 
     return t;
 }
@@ -41,36 +47,48 @@ void TablaHashImprimir(TablaHash* t) {
     // Validamos la entrada
     assert(t);
 
-    // Imprimimos
+    // Imprimimos los datos
     for (unsigned i = 0; i < t->capacidad; i++)
-        if (t->tabla[i]) printf("[%d] `%s`.\n", i, t->tabla[i]);
-}
+        if (t->tabla[i]) printf("[%u] `%s`.\n", i, t->tabla[i]);
 
-int TablaHashCasilleroVacio(TablaHash* t, unsigned i) {
-    // Validamos la entrada
-    assert(t);
+    // Imprimimos estadisticas
+    printf("Elementos: %d.\n", t->nElementos);
+    printf("Capacidad: %d.\n", t->capacidad);
+    printf("Factor de carga: %f.\n", (float) t->nElementos / t->capacidad);
+    printf("Colisiones: %d.\n", t->colisiones);
+    printf("Peor caso: %d.\n", t->peorcaso);
+    printf("Rehasheos: %d.\n", t->rehasheos);
 
-    // El casillero esta vacio si es NULL y no esta eliminado
-    return !t->tabla[i] && !t->eliminadas[i];
+    // Imprimimos el tamaño de la tabla
+    unsigned tamano = sizeof(String) * t->capacidad;
+    for (unsigned i = 0; i < t->capacidad; i++)
+        if (t->tabla[i]) tamano += (strlen(t->tabla[i])+1) * sizeof(char);
+    printf("Tamaño en memoria: %f mb.\n", (float) tamano / 1024 / 1024);
 }
 
 void TablaHashInsertar(TablaHash* t, String s) {
     // Validamos la entrada
     assert(t && s);
 
-    // Comprobamos el factor de carga
-    if (t->nElementos / t->capacidad > MAX_LOAD) TablaHashRedimensionar(t);
-
     // Calculamos la posicion ideal
-    unsigned idx = t->hash(s) % t->capacidad;
+    unsigned i = t->hash1(s) % t->capacidad;
 
-    // Sondeo lineal
-    while (t->tabla[idx]) idx = ++idx % t->capacidad;
+    // Doble hasheo
+    int sondeos;
+    if (t->tabla[i]) t->colisiones++;
+    for (sondeos = 0; t->tabla[i] && sondeos < WORST_CASE; sondeos++)
+        i = (i + t->hash2(s)) % t->capacidad;
+    if (sondeos > t->peorcaso && sondeos < WORST_CASE) t->peorcaso = sondeos;
 
     // Almacenamos los datos
-    t->tabla[idx] = s;
-    t->eliminadas[idx] = 0;
-    t->nElementos++;
+    if ((float) t->nElementos / (float) t->capacidad < MAX_LOAD && sondeos < WORST_CASE) {
+        assert(!t->tabla[i]);
+        t->tabla[i] = s;
+        t->nElementos++;
+    } else {
+        TablaHashRedimensionar(t);
+        TablaHashInsertar(t, s);
+    }
 }
 
 int TablaHashBuscar(TablaHash* t, String s) {
@@ -78,55 +96,35 @@ int TablaHashBuscar(TablaHash* t, String s) {
     assert(t && s);
 
     // Calculamos la posicion ideal
-    unsigned idx = t->hash(s) % t->capacidad;
+    unsigned idx = t->hash1(s) % t->capacidad;
 
     // Comparamos la palabra y hacemos el sondeo
-    while (!TablaHashCasilleroVacio(t, idx)) {
-        if (t->tabla[idx] && !strcmp(s, t->tabla[idx])) return idx;
-        idx = ++idx % t->capacidad;
+    while (t->tabla[idx]) {
+        if (!strcmp(s, t->tabla[idx])) return idx;
+        idx = (idx + t->hash2(s)) % t->capacidad;
     }
 
     // Si todo fallo, la palabra no esta
     return -1;
 }
 
-void TablaHashEliminar(TablaHash* t, String s) {
-    // Validamos la entrada
-    assert(t && s);
-
-    // Buscamos la palabra
-    int i = TablaHashBuscar(t, s);
-
-    // Si encontramos la palabra, la eliminamos
-    if (i != -1) {
-        t->tabla[i] = NULL;
-        t->eliminadas[i] = 1;
-        t->nElementos--;
-    }
-}
-
 void TablaHashRedimensionar(TablaHash* t) {
     // Validamos la entrada
     assert(t);
 
-    // Creamos los nuevos arreglo e inicializamos
+    // Creamos el nuevo arreglo e inicializamos
     String* tnueva = malloc(sizeof(String) * t->capacidad * 2); assert(tnueva);
-    unsigned* enueva = malloc(sizeof(unsigned) * t->capacidad * 2); assert(enueva);
-    for (unsigned i = 0; i < t->capacidad * 2; i++) {
-        tnueva[i] = NULL;
-        enueva[i] = 0;
-    }
+    for (unsigned i = 0; i < t->capacidad * 2; i++) tnueva[i] = NULL;
 
     // Conservamos los datos viejos
     String* tvieja = t->tabla;
-    unsigned* evieja = t->eliminadas;
     unsigned cvieja = t->capacidad;
 
     // Intercambiamos las tablas
     t->tabla = tnueva;
     t->capacidad = t->capacidad * 2;
-    t->nElementos = 0;
-    t->eliminadas = enueva;
+    t->nElementos = t->colisiones = t->peorcaso = 0;
+    t->rehasheos++;
 
     // Volvemos a agregar los datos
     for (unsigned i = 0; i < cvieja; i++)
@@ -134,7 +132,6 @@ void TablaHashRedimensionar(TablaHash* t) {
 
     // Destruimos la tabla vieja
     free(tvieja);
-    free(evieja);
 }
 
 void TablaHashDestruir(TablaHash* t) {
@@ -146,6 +143,5 @@ void TablaHashDestruir(TablaHash* t) {
 
     // Borramos el resto
     free(t->tabla);
-    free(t->eliminadas);
     free(t);
 }

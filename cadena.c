@@ -1,4 +1,5 @@
 #include <ctype.h> // tolower
+#include <string.h> // strlen
 
 #include "cadena.h"
 
@@ -7,15 +8,7 @@ void toLower(String s) {
 }
 
 int isDelimiter(char c) {
-    switch (c) {
-        case ' ' :
-        case '\n':
-        case ':' :
-        case ';' :
-        case ',' :
-        case '.' :
-        case '!' :
-        case '?' : return 1;
-        default  : return 0;
-    }
+    for (unsigned i = 0; i < strlen(DELIMITADORES); i++)
+        if (c == DELIMITADORES[i]) return 1;
+    return 0;
 }
