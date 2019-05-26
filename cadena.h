@@ -3,8 +3,8 @@
 
 #include <wchar.h>
 
-#define WORD_LEN 30
-#define DELIMITADORES L" \n:;,.!?"
+#define LONGITUD 35
+#define DELIMITADORES L" \n\r:;,.!?¡¿\"()[]{}"
 #define ALFABETO L"abcdefghijklmnopqrstuvwxyzáéíóúüñ"
 
 typedef wchar_t* String;

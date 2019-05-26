@@ -1,8 +1,8 @@
 #include <assert.h> // assert
-#include <stdio.h> // printf
 #include <wchar.h> // wcslen, wcscpy, wmemmove, wcstok
-#include <malloc.h> // malloc, NULL
+#include <malloc.h> // malloc
 
+#include "cadena.h"
 #include "sugerencias.h"
 
 void intercambiarAdyacentes(String palabra, TablaHash* t) {
@@ -64,16 +64,13 @@ void agregarEspacios(String palabra, TablaHash* t) {
 
         // Separamos las palabras
         wmemmove(&sugerencia[i+1], &sugerencia[i], wcslen(sugerencia) - i + 1);
-        sugerencia[i] = ' ';
+        sugerencia[i] = L'\0';
 
-        // Tokenizamos y buscamos en el diccionario
-        String token = malloc(sizeof(char) * wcslen(palabra)); assert(token);
-        String buffer;
-        wcscpy(token, sugerencia); String temp = token;
-        if (TablaHashBuscar(t, wcstok(token, L" ", &buffer)) != -1)
-            if (TablaHashBuscar(t, wcstok(NULL, L" ", &buffer)) != -1)
+        if (TablaHashBuscar(t, sugerencia) != -1)
+            if (TablaHashBuscar(t, &sugerencia[i+1]) != -1) {
+                sugerencia[i] = L' ';
                 wprintf(L"%ls, ", sugerencia);
-        free(temp);
+            }
     }
 }
 
@@ -86,6 +83,7 @@ void reemplazarCaracteres(String palabra, TablaHash* t) {
             wchar_t sugerencia[wcslen(palabra) + 1];
             wcscpy(sugerencia, palabra);
 
+            // Reemplazamos el caracter actual
             sugerencia[i] = ALFABETO[j];
 
             sugerirPalabra(sugerencia, t);

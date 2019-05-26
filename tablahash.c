@@ -1,4 +1,3 @@
-#include <stdio.h> // printf
 #include <stdlib.h> // malloc, NULL
 #include <wchar.h> // wcslen, wcscmp
 #include <assert.h> // assert
@@ -49,21 +48,21 @@ void TablaHashImprimir(TablaHash* t) {
 
     // Imprimimos los datos
     for (unsigned i = 0; i < t->capacidad; i++)
-        if (t->tabla[i]) printf("[%u] %ls.\n", i, t->tabla[i]);
+        if (t->tabla[i]) wprintf(L"[%u] %ls.\n", i, t->tabla[i]);
 
     // Imprimimos estadisticas
-    printf("Elementos: %d.\n", t->nElementos);
-    printf("Capacidad: %d.\n", t->capacidad);
-    printf("Factor de carga: %f.\n", (float) t->nElementos / t->capacidad);
-    printf("Colisiones: %d.\n", t->colisiones);
-    printf("Peor caso: %d.\n", t->peorcaso);
-    printf("Rehasheos: %d.\n", t->rehasheos);
+    wprintf(L"Elementos: %d.\n", t->nElementos);
+    wprintf(L"Capacidad: %d.\n", t->capacidad);
+    wprintf(L"Factor de carga: %f.\n", (float) t->nElementos / t->capacidad);
+    wprintf(L"Colisiones: %d.\n", t->colisiones);
+    wprintf(L"Peor caso: %d.\n", t->peorcaso);
+    wprintf(L"Rehasheos: %d.\n", t->rehasheos);
 
     // Imprimimos el tamaño de la tabla
     unsigned tamano = sizeof(String) * t->capacidad;
     for (unsigned i = 0; i < t->capacidad; i++)
         if (t->tabla[i]) tamano += (wcslen(t->tabla[i]) + 1) * sizeof(wchar_t);
-    printf("Tamaño en memoria: %f mb.\n", (float) tamano / 1024 / 1024);
+    wprintf(L"Tamaño en memoria: %f mb.\n", (float) tamano / 1024 / 1024);
 }
 
 void TablaHashInsertar(TablaHash* t, String s) {
@@ -82,7 +81,7 @@ void TablaHashInsertar(TablaHash* t, String s) {
 
     // Almacenamos los datos
     if ((float) t->nElementos / (float) t->capacidad < MAX_LOAD && sondeos < WORST_CASE) {
-        assert(!t->tabla[i]);
+        assert(!t->tabla[i]); // assert(TablaHashBuscar(t,s) == -1)
         t->tabla[i] = s;
         t->nElementos++;
     } else {

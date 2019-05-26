@@ -1,9 +1,9 @@
-#include <stdio.h> // printf, fopen, fclose
+#include <stdio.h>  // fopen, fclose
+#include <wchar.h>  // wprintf
 #include <assert.h> // assert
-#include <string.h> // strcpy
+#include <string.h> // strcmp
 #include <stdlib.h> // malloc
-#include <fcntl.h> // open
-#include <unistd.h> // close, dup
+#include <unistd.h> // close
 #include <locale.h> // setlocale
 
 #include "tablahash.h"
@@ -17,38 +17,40 @@ TablaHash* crearDiccionario(char* fileName) {
     assert(fileName);
 
     // Creamos la tabla hash
-    TablaHash* tabla = TablaHashCrear(HASH_SIZE, djb2, sdbm);
+    TablaHash* t = TablaHashCrear(HASH_SIZE, djb2, sdbm);
 
     // Recorremos el archivo y agregamos las palabras
     FILE* file = fopen(fileName, "r"); assert(file);
-    wchar_t leido[WORD_LEN];
+    wchar_t leido[LONGITUD];
     for (int i = 0; (leido[i] = fgetwc(file)) != WEOF; i++)
-        if (leido[i] == L'\n' || leido[i] == L'\r') {
+        if (isDelimiter(leido[i])) {
             leido[i] = L'\0';
             if (i) {
+                assert(i < LONGITUD);
                 String palabra = malloc(sizeof(wchar_t) * ++i); assert(palabra);
-                TablaHashInsertar(tabla, wcscpy(palabra, leido));
+                TablaHashInsertar(t, wcscpy(palabra, leido));
             }
             i = -1;
         }
     fclose(file);
 
-    return tabla;
+    return t;
 }
 
 void main(int argc, char** argv) {
     // Chequeamos la sintaxis
     if (argc != 3) {
-        printf("Uso correcto: %s archivoEntrada archivoSalida.\n", argv[0]);
+        wprintf(L"Uso correcto: %s archivoEntrada archivoSalida.\n", argv[0]);
         return;
     }
 
     // Redireccionamos la salida estandar
     if (strcmp(argv[2], "stdout")) {
         close(1);
-        open(argv[2], O_WRONLY|O_CREAT, 0666);
+        fopen(argv[2], "w");
     }
 
+    // Configuracion de idioma
     setlocale(LC_ALL, "");
 
     // Creamos el diccionario
@@ -56,11 +58,11 @@ void main(int argc, char** argv) {
 
     // Leemos la entrada al mismo tiempo que buscamos errores
     FILE* file = fopen(argv[1], "r"); assert(file);
-    wchar_t palabra[WORD_LEN]; unsigned lineNumber = 1;
+    wchar_t palabra[LONGITUD]; unsigned lineNumber = 1;
     for (int i = 0; (palabra[i] = fgetwc(file)) != WEOF; i++)
         if (isDelimiter(palabra[i])) {
             if (palabra[i] == L'\n') lineNumber++;
-            palabra[i] = L'\0'; toLower(palabra);
+            palabra[i] = L'\0'; toLower(palabra); assert(i < LONGITUD);
             if (i) chequearPalabra(palabra, lineNumber, t);
             i = -1;
         }
