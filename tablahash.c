@@ -98,7 +98,7 @@ int TablaHashBuscar(TablaHash* t, String s) {
     unsigned idx = t->hash1(s) % t->capacidad;
 
     // Comparamos la palabra y hacemos el sondeo
-    while (t->tabla[idx]) {
+    for (int i = 0; i < WORST_CASE && t->tabla[idx]; i++) {
         if (!wcscmp(s, t->tabla[idx])) return idx;
         idx = (idx + t->hash2(s)) % t->capacidad;
     }

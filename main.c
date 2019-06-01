@@ -61,10 +61,10 @@ void main(int argc, char** argv) {
     wchar_t palabra[LONGITUD]; unsigned lineNumber = 1;
     for (int i = 0; (palabra[i] = fgetwc(file)) != WEOF; i++)
         if (isDelimiter(palabra[i])) {
-            if (palabra[i] == L'\n') lineNumber++;
+            int newLine = palabra[i] == L'\n';
             palabra[i] = L'\0'; toLower(palabra); assert(i < LONGITUD);
             if (i) chequearPalabra(palabra, lineNumber, t);
-            i = -1;
+            lineNumber += newLine; i = -1;
         }
     fclose(file);
 

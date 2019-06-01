@@ -4,15 +4,15 @@
 #include "cadena.h"
 #include "tablahash.h"
 
-void intercambiarAdyacentes(String s, TablaHash* t);
+int intercambiarAdyacentes(String s, TablaHash* t, String* a);
 
-void eliminarCaracteres(String s, TablaHash* t);
+int eliminarCaracteres(String s, TablaHash* t, String* a);
 
-void agregarCaracter(String s, TablaHash* t);
+int agregarCaracter(String s, TablaHash* t, String* a);
 
-void reemplazarCaracteres(String s, TablaHash* t);
+int reemplazarCaracteres(String s, TablaHash* t, String* a);
 
-void sugerirPalabra(String s, TablaHash* t);
+int sugerirPalabra(String s, TablaHash* t);
 
 void chequearPalabra(String s, unsigned ln, TablaHash* t);
 
