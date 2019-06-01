@@ -41,7 +41,7 @@ void main(int argc, char** argv) {
     // Chequeamos la sintaxis
     if (argc < 3) {
         wprintf(L"Error de sintaxis. Uso correcto:\n");
-        wprintf(L"%s archivoEntrada archivoSalida|stdout [archivoDiccionario].\n", argv[0]);
+        wprintf(L"%s ArchivoEntrada ArchivoSalida|stdout [ArchivoDiccionario].\n", argv[0]);
         return;
     }
 
