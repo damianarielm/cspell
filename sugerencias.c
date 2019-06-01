@@ -147,30 +147,34 @@ void chequearPalabra(String s, unsigned lineNumber, TablaHash* t) {
     int sugerencias = 0;
     if (TablaHashBuscar(t, s) == -1) {
         // Primer nivel
-        wprintf(L"\n\nLinea %d, %ls no esta en el diccionario. ", lineNumber, s);
-        wprintf(L"Quizas quizo decir:\n(1) ");
-        sugerencias += intercambiarAdyacentes(s, t, nivel1, sugeridas);
-        sugerencias += eliminarCaracteres(s, t, &nivel1[intercambios], sugeridas);
-        sugerencias += agregarCaracteres(s, t, &nivel1[intercambios+eliminaciones], sugeridas);
-        sugerencias += reemplazarCaracteres(s, t, &nivel1[intercambios+eliminaciones+agregados], sugeridas);
-        sugerencias += agregarEspacios(s, t, sugeridas);
+        wprintf(L"Linea %d, %ls no esta en el diccionario. ", lineNumber, s);
+        if (wcslen(s) < MAXLONGITUD) {
+            wprintf(L"Quizas quizo decir:\n(1) ");
+            sugerencias += intercambiarAdyacentes(s, t, nivel1, sugeridas);
+            sugerencias += eliminarCaracteres(s, t, &nivel1[intercambios], sugeridas);
+            sugerencias += agregarCaracteres(s, t, &nivel1[intercambios+eliminaciones], sugeridas);
+            sugerencias += reemplazarCaracteres(s, t, &nivel1[intercambios+eliminaciones+agregados], sugeridas);
+            sugerencias += agregarEspacios(s, t, sugeridas);
 
-        // Segundo nivel
-        if (sugerencias < MINSUGERENCIAS) wprintf(L"\n(2) ");
-        for (int i = 0; i < total && sugerencias < MINSUGERENCIAS; i++)
-            sugerencias += eliminarCaracteres(nivel1[i], t, NULL, sugeridas);
-        for (int i = 0; i < total && sugerencias < MINSUGERENCIAS; i++)
-            sugerencias += intercambiarAdyacentes(nivel1[i], t, NULL, sugeridas);
-        for (int i = 0; i < total && sugerencias < MINSUGERENCIAS; i++)
-            sugerencias += reemplazarCaracteres(nivel1[i], t, NULL, sugeridas);
-        for (int i = 0; i < total && sugerencias < MINSUGERENCIAS; i++)
-            sugerencias += agregarCaracteres(nivel1[i], t, NULL, sugeridas);
-        for (int i = 0; i < total && sugerencias < MINSUGERENCIAS; i++)
-            sugerencias += agregarEspacios(nivel1[i], t, sugeridas);
+            // Segundo nivel
+            if (sugerencias < MINSUGERENCIAS) wprintf(L"\n(2) ");
+            for (int i = 0; i < total && sugerencias < MINSUGERENCIAS; i++)
+                sugerencias += eliminarCaracteres(nivel1[i], t, NULL, sugeridas);
+            for (int i = 0; i < total && sugerencias < MINSUGERENCIAS; i++)
+                sugerencias += intercambiarAdyacentes(nivel1[i], t, NULL, sugeridas);
+            for (int i = 0; i < total && sugerencias < MINSUGERENCIAS; i++)
+                sugerencias += reemplazarCaracteres(nivel1[i], t, NULL, sugeridas);
+            for (int i = 0; i < total && sugerencias < MINSUGERENCIAS; i++)
+                sugerencias += agregarCaracteres(nivel1[i], t, NULL, sugeridas);
+            for (int i = 0; i < total && sugerencias < MINSUGERENCIAS; i++)
+                sugerencias += agregarEspacios(nivel1[i], t, sugeridas);
+            wprintf(L"\n\n");
 
-        // Liberamos la memoria
-        for (int i = 0; i < total; i++) {
-            free(nivel1[i]); free(sugeridas[i]);
-        }
+            // Liberamos la memoria
+            for (int i = 0; i < total; i++) {
+                free(nivel1[i]); free(sugeridas[i]);
+            }
+        } else
+            wprintf(L"\n(0) Palabra demasiado grande. Omitiendo sugerencias.\n");
     }
 }

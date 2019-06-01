@@ -17,7 +17,7 @@ int isDelimiter(wchar_t c) {
 
 int enArreglo(String s, String* a) {
     assert(s && a);
-    for (int i = 0; a[i]; i++) if (!wcscmp(a[i], s)) return 1;
+    for (int i = 0; a[i] && a[i][0]; i++) if (!wcscmp(a[i], s)) return 1;
     return 0;
 }
 

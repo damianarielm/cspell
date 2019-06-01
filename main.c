@@ -39,8 +39,9 @@ TablaHash* crearDiccionario(char* fileName) {
 
 void main(int argc, char** argv) {
     // Chequeamos la sintaxis
-    if (argc != 3) {
-        wprintf(L"Uso correcto: %s archivoEntrada archivoSalida.\n", argv[0]);
+    if (argc < 3) {
+        wprintf(L"Error de sintaxis. Uso correcto:\n");
+        wprintf(L"%s archivoEntrada archivoSalida|stdout [archivoDiccionario].\n", argv[0]);
         return;
     }
 
@@ -50,11 +51,18 @@ void main(int argc, char** argv) {
         fopen(argv[2], "w");
     }
 
+    // Elegimos el diccionario
+    char* diccionario;
+    if (argc > 3)
+        diccionario = argv[3];
+    else
+        diccionario = DICTIONARY;
+
     // Configuracion de idioma
     setlocale(LC_ALL, "");
 
     // Creamos el diccionario
-    TablaHash* t = crearDiccionario(DICTIONARY);
+    TablaHash* t = crearDiccionario(diccionario);
 
     // Leemos la entrada al mismo tiempo que buscamos errores
     FILE* file = fopen(argv[1], "r"); assert(file);
