@@ -14,4 +14,8 @@ void toLower(String s);
 
 int isDelimiter(wchar_t c);
 
+int enArreglo(String s, String* a);
+
+void arregloAgregar(String s, String* a);
+
 #endif

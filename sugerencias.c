@@ -5,9 +5,9 @@
 #include "cadena.h"
 #include "sugerencias.h"
 
-int intercambiarAdyacentes(String palabra, TablaHash* t, String* a) {
+int intercambiarAdyacentes(String palabra, TablaHash* t, String* a, String* b) {
     // Validamos la entrada
-    assert(palabra && t);
+    assert(palabra && t && b);
 
     int sugerencias = 0;
     for (int i = 0; i < wcslen(palabra) - 1; i++) {
@@ -20,15 +20,15 @@ int intercambiarAdyacentes(String palabra, TablaHash* t, String* a) {
         sugerencia[i+1] = c;
 
         if (a) wcscpy(a[i], sugerencia);
-        sugerencias += sugerirPalabra(sugerencia, t);
+        sugerencias += sugerirPalabra(sugerencia, t, b);
     }
 
     return sugerencias;
 }
 
-int eliminarCaracteres(String palabra, TablaHash* t, String* a) {
+int eliminarCaracteres(String palabra, TablaHash* t, String* a, String* b) {
     // Validamos la entrada
-    assert(palabra && t);
+    assert(palabra && t && b);
 
    int sugerencias = 0;
    for (unsigned i = 0; i < wcslen(palabra); i++) {
@@ -38,15 +38,15 @@ int eliminarCaracteres(String palabra, TablaHash* t, String* a) {
         wmemmove(&sugerencia[i], &sugerencia[i+1], wcslen(sugerencia) - i);
 
         if (a) wcscpy(a[i], sugerencia);
-        sugerencias += sugerirPalabra(sugerencia, t);
+        sugerencias += sugerirPalabra(sugerencia, t, b);
     }
 
     return sugerencias;
 }
 
-int agregarCaracteres(String palabra, TablaHash* t, String* a) {
+int agregarCaracteres(String palabra, TablaHash* t, String* a, String* b) {
     // Validamos la entrada
-    assert(palabra && t);
+    assert(palabra && t && b);
 
     int sugerencias = 0;
     for (unsigned i = 0; i < wcslen(palabra) + 1; i++) {
@@ -59,16 +59,16 @@ int agregarCaracteres(String palabra, TablaHash* t, String* a) {
             sugerencia[i] = ALFABETO[j];
             if (a) wcscpy(a[j + wcslen(ALFABETO) * i], sugerencia);
 
-            sugerencias += sugerirPalabra(sugerencia, t);
+            sugerencias += sugerirPalabra(sugerencia, t, b);
         }
     }
 
     return sugerencias;
 }
 
-int agregarEspacios(String palabra, TablaHash* t, String* a) {
+int agregarEspacios(String palabra, TablaHash* t, String* b) {
     // Validamos la entrada
-    assert(palabra && t);
+    assert(palabra && t && b);
 
     int sugerencias = 0;
     for (unsigned i = 1; i < wcslen(palabra); i++) {
@@ -90,9 +90,9 @@ int agregarEspacios(String palabra, TablaHash* t, String* a) {
     return sugerencias;
 }
 
-int reemplazarCaracteres(String palabra, TablaHash* t, String* a) {
+int reemplazarCaracteres(String palabra, TablaHash* t, String* a, String* b) {
     // Validamos la entrada
-    assert(palabra && t);
+    assert(palabra && t && b);
 
     int sugerencias = 0;
     for (unsigned i = 0; i < wcslen(palabra); i++)
@@ -104,18 +104,19 @@ int reemplazarCaracteres(String palabra, TablaHash* t, String* a) {
             sugerencia[i] = ALFABETO[j];
             if (a) wcscpy(a[j + wcslen(ALFABETO) * i], sugerencia);
 
-            sugerencias += sugerirPalabra(sugerencia, t);
+            sugerencias += sugerirPalabra(sugerencia, t, b);
         }
 
     return sugerencias;
 }
 
-int sugerirPalabra(String palabra, TablaHash* t) {
+int sugerirPalabra(String palabra, TablaHash* t, String* b) {
     // Validamos la entrada
-    assert(palabra && t);
+    assert(palabra && t && b);
 
-    if (TablaHashBuscar(t, palabra) != -1) {
+    if (TablaHashBuscar(t, palabra) != -1 && !enArreglo(palabra, b)) {
         wprintf(L"%ls, ", palabra);
+        arregloAgregar(palabra, b);
         return 1;
     }
 
@@ -127,44 +128,49 @@ void chequearPalabra(String s, unsigned lineNumber, TablaHash* t) {
     assert(s && t);
 
 
-    // Arreglo para guardar palabras del primer nivel
+    // Arreglos para guardar palabras sugeridas y del primer nivel
     int intercambios = wcslen(s) - 1;
     int eliminaciones = wcslen(s);
     int agregados = (wcslen(s) + 1) * wcslen(ALFABETO);
     int reemplazos = wcslen(s) * wcslen(ALFABETO);
     int total = intercambios + eliminaciones + agregados + reemplazos;
-    String* nivel1 = malloc(sizeof(String) * total);
-    for (int i = 0; i < total; i++)
-        nivel1[i] = malloc(sizeof(wchar_t) * LONGITUD * 2);
 
-    int sugerencias = 0;
+    String nivel1[total]; String sugeridas[total+1];
+    for (int i = 0; i < total; i++) {
+        nivel1[i] = malloc(sizeof(wchar_t) * LONGITUD); assert(nivel1[i]);
+        sugeridas[i] = malloc(sizeof(wchar_t) * LONGITUD); assert(sugeridas[i]);
+        sugeridas[i][0] = L'\0';
+    }
+    sugeridas[total] = NULL;
+
     // Buscamos la palabra actual
+    int sugerencias = 0;
     if (TablaHashBuscar(t, s) == -1) {
+        // Primer nivel
         wprintf(L"\n\nLinea %d, %ls no esta en el diccionario. ", lineNumber, s);
         wprintf(L"Quizas quizo decir:\n(1) ");
-        sugerencias += intercambiarAdyacentes(s, t, nivel1);
-        sugerencias += eliminarCaracteres(s, t, &nivel1[intercambios]);
-        sugerencias += agregarCaracteres(s, t, &nivel1[intercambios+eliminaciones]);
-        sugerencias += reemplazarCaracteres(s, t, &nivel1[intercambios+eliminaciones+agregados]);
-        sugerencias += agregarEspacios(s, t, NULL);
+        sugerencias += intercambiarAdyacentes(s, t, nivel1, sugeridas);
+        sugerencias += eliminarCaracteres(s, t, &nivel1[intercambios], sugeridas);
+        sugerencias += agregarCaracteres(s, t, &nivel1[intercambios+eliminaciones], sugeridas);
+        sugerencias += reemplazarCaracteres(s, t, &nivel1[intercambios+eliminaciones+agregados], sugeridas);
+        sugerencias += agregarEspacios(s, t, sugeridas);
 
         // Segundo nivel
         if (sugerencias < MINSUGERENCIAS) wprintf(L"\n(2) ");
-        for (int i = 0; i < total; i++) {
-            sugerencias += intercambiarAdyacentes(nivel1[i], t, NULL);
-            if (sugerencias >= MINSUGERENCIAS) break;
-            sugerencias += eliminarCaracteres(nivel1[i], t, NULL);
-            if (sugerencias >= MINSUGERENCIAS) break;
-            sugerencias += agregarCaracteres(nivel1[i], t, NULL);
-            if (sugerencias >= MINSUGERENCIAS) break;
-            sugerencias += reemplazarCaracteres(nivel1[i], t, NULL);
-            if (sugerencias >= MINSUGERENCIAS) break;
-            sugerencias += agregarEspacios(nivel1[i], t, NULL);
-            if (sugerencias >= MINSUGERENCIAS) break;
-        }
+        for (int i = 0; i < total && sugerencias < MINSUGERENCIAS; i++)
+            sugerencias += eliminarCaracteres(nivel1[i], t, NULL, sugeridas);
+        for (int i = 0; i < total && sugerencias < MINSUGERENCIAS; i++)
+            sugerencias += intercambiarAdyacentes(nivel1[i], t, NULL, sugeridas);
+        for (int i = 0; i < total && sugerencias < MINSUGERENCIAS; i++)
+            sugerencias += reemplazarCaracteres(nivel1[i], t, NULL, sugeridas);
+        for (int i = 0; i < total && sugerencias < MINSUGERENCIAS; i++)
+            sugerencias += agregarCaracteres(nivel1[i], t, NULL, sugeridas);
+        for (int i = 0; i < total && sugerencias < MINSUGERENCIAS; i++)
+            sugerencias += agregarEspacios(nivel1[i], t, sugeridas);
 
         // Liberamos la memoria
-        for (int i = 0; i < total; i++) free(nivel1[i]);
-        free(nivel1);
+        for (int i = 0; i < total; i++) {
+            free(nivel1[i]); free(sugeridas[i]);
+        }
     }
 }
