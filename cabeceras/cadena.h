@@ -7,7 +7,7 @@
 #define DELIMITADORES L" \n\r:;,.!?¡¿\"()[]{}"
 #define ALFABETO L"abcdefghijklmnopqrstuvwxyzáéíóúüñ"
 #define MINSUGERENCIAS 5
-#define MAXLONGITUD 15
+#define MAXLONGITUD 20
 
 typedef wchar_t* String;
 

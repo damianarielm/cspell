@@ -3,5 +3,5 @@
 Sintaxis:
 
 ```
-./spell ArchivoDeEntrada ArchivoDeSalida|stdout [ArchivoDiccionario]
+./spell ArchivoDeEntrada ArchivoDeSalida|stdout [ArchivoDiccionario] [-s]
 ```

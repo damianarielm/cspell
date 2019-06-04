@@ -2,8 +2,8 @@
 #include <wchar.h> // wcslen, wcscpy, wmemmove, wcstok
 #include <malloc.h> // malloc
 
-#include "cadena.h"
-#include "sugerencias.h"
+#include "cabeceras/cadena.h"
+#include "cabeceras/sugerencias.h"
 
 int intercambiarAdyacentes(String palabra, TablaHash* t, String* a, String* b) {
     // Validamos la entrada
@@ -127,28 +127,27 @@ void chequearPalabra(String s, unsigned lineNumber, TablaHash* t) {
     // Validamos la entrada
     assert(s && t);
 
-
-    // Arreglos para guardar palabras sugeridas y del primer nivel
-    int intercambios = wcslen(s) - 1;
-    int eliminaciones = wcslen(s);
-    int agregados = (wcslen(s) + 1) * wcslen(ALFABETO);
-    int reemplazos = wcslen(s) * wcslen(ALFABETO);
-    int total = intercambios + eliminaciones + agregados + reemplazos;
-
-    String nivel1[total]; String sugeridas[total+1];
-    for (int i = 0; i < total; i++) {
-        nivel1[i] = malloc(sizeof(wchar_t) * LONGITUD); assert(nivel1[i]);
-        sugeridas[i] = malloc(sizeof(wchar_t) * LONGITUD); assert(sugeridas[i]);
-        sugeridas[i][0] = L'\0';
-    }
-    sugeridas[total] = NULL;
-
     // Buscamos la palabra actual
     int sugerencias = 0;
     if (TablaHashBuscar(t, s) == -1) {
-        // Primer nivel
         wprintf(L"Linea %d, %ls no esta en el diccionario. ", lineNumber, s);
         if (wcslen(s) < MAXLONGITUD) {
+            int intercambios = wcslen(s) - 1;
+            int eliminaciones = wcslen(s);
+            int agregados = (wcslen(s) + 1) * wcslen(ALFABETO);
+            int reemplazos = wcslen(s) * wcslen(ALFABETO);
+            int total = intercambios + eliminaciones + agregados + reemplazos;
+
+            // Arreglos para guardar palabras sugeridas y del primer nivel
+            String nivel1[total]; String sugeridas[total+1];
+            for (int i = 0; i < total; i++) {
+                nivel1[i] = malloc(sizeof(wchar_t) * LONGITUD); assert(nivel1[i]);
+                sugeridas[i] = malloc(sizeof(wchar_t) * LONGITUD); assert(sugeridas[i]);
+                sugeridas[i][0] = L'\0';
+            }
+            sugeridas[total] = NULL;
+
+            // Primer nivel
             wprintf(L"Quizas quizo decir:\n(1) ");
             sugerencias += intercambiarAdyacentes(s, t, nivel1, sugeridas);
             sugerencias += eliminarCaracteres(s, t, &nivel1[intercambios], sugeridas);

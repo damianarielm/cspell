@@ -6,11 +6,11 @@
 #include <unistd.h> // close
 #include <locale.h> // setlocale
 
-#include "tablahash.h"
-#include "cadena.h"
-#include "sugerencias.h"
+#include "cabeceras/tablahash.h"
+#include "cabeceras/cadena.h"
+#include "cabeceras/sugerencias.h"
 
-#define DICTIONARY "listado-general.txt"
+#define DICTIONARY "diccionarios/listado-general.txt"
 
 TablaHash* crearDiccionario(char* fileName) {
     // Validamos la entrada
@@ -41,7 +41,7 @@ void main(int argc, char** argv) {
     // Chequeamos la sintaxis
     if (argc < 3) {
         wprintf(L"Error de sintaxis. Uso correcto:\n");
-        wprintf(L"%s ArchivoEntrada ArchivoSalida|stdout [ArchivoDiccionario].\n", argv[0]);
+        wprintf(L"%s ArchivoEntrada ArchivoSalida|stdout [ArchivoDiccionario] [-s].\n", argv[0]);
         return;
     }
 
@@ -53,10 +53,8 @@ void main(int argc, char** argv) {
 
     // Elegimos el diccionario
     char* diccionario;
-    if (argc > 3)
-        diccionario = argv[3];
-    else
-        diccionario = DICTIONARY;
+    if (argc > 3 && strcmp(argv[3], "-s")) diccionario = argv[3];
+    else diccionario = DICTIONARY;
 
     // Configuracion de idioma
     setlocale(LC_ALL, "");
@@ -76,5 +74,6 @@ void main(int argc, char** argv) {
         }
     fclose(file);
 
+    if (!strcmp(argv[argc - 1], "-s")) TablaHashImprimir(t);
     TablaHashDestruir(t);
 }

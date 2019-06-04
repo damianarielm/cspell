@@ -2,7 +2,7 @@
 #include <wchar.h> // wcslen, wcscmp
 #include <assert.h> // assert
 
-#include "tablahash.h"
+#include "cabeceras/tablahash.h"
 
 // http://www.cse.yorku.ca/~oz/hash.html
 unsigned long djb2(String string) {
@@ -141,6 +141,5 @@ void TablaHashDestruir(TablaHash* t) {
     for (unsigned i = 0; i < t->capacidad; i++) free(t->tabla[i]);
 
     // Borramos el resto
-    free(t->tabla);
-    free(t);
+    free(t->tabla); free(t);
 }
