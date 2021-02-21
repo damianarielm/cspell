@@ -1,5 +1,5 @@
 #include <assert.h> // assert
-#include <wchar.h> // wcslen, wcscpy, wmemmove, wcstok
+#include <wchar.h>  // wcslen, wcscpy, wmemmove, wcstok
 #include <malloc.h> // malloc
 
 #include "cabeceras/cadena.h"
@@ -16,8 +16,8 @@ int intercambiarAdyacentes(String palabra, TablaHash* t, String* a, String* b) {
 
         // Intercambio de caracteres
         wchar_t c = sugerencia[i];
-        sugerencia[i] = sugerencia[i+1];
-        sugerencia[i+1] = c;
+        sugerencia[i] = sugerencia[i + 1];
+        sugerencia[i + 1] = c;
 
         if (a) wcscpy(a[i], sugerencia);
         sugerencias += sugerirPalabra(sugerencia, t, b);
@@ -35,7 +35,7 @@ int eliminarCaracteres(String palabra, TablaHash* t, String* a, String* b) {
         wchar_t sugerencia[wcslen(palabra) + 1];
         wcscpy(sugerencia, palabra);
 
-        wmemmove(&sugerencia[i], &sugerencia[i+1], wcslen(sugerencia) - i);
+        wmemmove(&sugerencia[i], &sugerencia[i + 1], wcslen(sugerencia) - i);
 
         if (a) wcscpy(a[i], sugerencia);
         sugerencias += sugerirPalabra(sugerencia, t, b);
@@ -55,7 +55,7 @@ int agregarCaracteres(String palabra, TablaHash* t, String* a, String* b) {
             wcscpy(sugerencia, palabra);
 
             // Separamos la cadena y agregamos el caracter
-            wmemmove(&sugerencia[i+1], &sugerencia[i], wcslen(sugerencia) - i + 1);
+            wmemmove(&sugerencia[i + 1], &sugerencia[i], wcslen(sugerencia) - i + 1);
             sugerencia[i] = ALFABETO[j];
             if (a) wcscpy(a[j + wcslen(ALFABETO) * i], sugerencia);
 
@@ -80,7 +80,7 @@ int agregarEspacios(String palabra, TablaHash* t, String* b) {
         sugerencia[i] = L'\0';
 
         if (TablaHashBuscar(t, sugerencia) != -1)
-            if (TablaHashBuscar(t, &sugerencia[i+1]) != -1) {
+            if (TablaHashBuscar(t, &sugerencia[i + 1]) != -1) {
                 sugerencias++;
                 sugerencia[i] = L' ';
                 wprintf(L"%ls, ", sugerencia);

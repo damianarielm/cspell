@@ -1,5 +1,5 @@
 #include <wctype.h> // towlower
-#include <wchar.h> // wcslen
+#include <wchar.h>  // wcslen
 #include <assert.h> // assert
 
 #include "cabeceras/cadena.h"
@@ -8,7 +8,8 @@ void toLower(String s) {
     // Validamos la entrada
     assert(s);
 
-    for (unsigned i = 0; s[i]; i++) s[i] = towlower(s[i]);
+    for (unsigned i = 0; s[i]; i++)
+        s[i] = towlower(s[i]);
 }
 
 int isDelimiter(wchar_t c) {
@@ -22,7 +23,8 @@ int enArreglo(String s, String* a) {
     // Validamos la entrada
     assert(s && a);
 
-    for (int i = 0; a[i] && a[i][0]; i++) if (!wcscmp(a[i], s)) return 1;
+    for (int i = 0; a[i] && a[i][0]; i++)
+        if (!wcscmp(a[i], s)) return 1;
 
     return 0;
 }

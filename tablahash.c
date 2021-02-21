@@ -1,5 +1,5 @@
 #include <stdlib.h> // malloc, NULL
-#include <wchar.h> // wcslen, wcscmp
+#include <wchar.h>  // wcslen, wcscmp
 #include <assert.h> // assert
 
 #include "cabeceras/tablahash.h"
@@ -15,8 +15,7 @@ unsigned long djb2(String string) {
     return hash;
 }
 
-unsigned long sdbm(String string)
-{
+unsigned long sdbm(String string) {
     // Validamos la entrada
     assert(string);
 
@@ -61,7 +60,8 @@ void TablaHashImprimir(TablaHash* t) {
     // Imprimimos el tamaño de la tabla
     unsigned tamano = sizeof(String) * t->capacidad;
     for (unsigned i = 0; i < t->capacidad; i++)
-        if (t->tabla[i]) tamano += (wcslen(t->tabla[i]) + 1) * sizeof(wchar_t);
+        if (t->tabla[i])
+            tamano += (wcslen(t->tabla[i]) + 1) * sizeof(wchar_t);
     wprintf(L"Tamaño en memoria: %f mb.\n", (float) tamano / 1024 / 1024);
 }
 
